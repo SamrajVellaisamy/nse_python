@@ -1,0 +1,17 @@
+﻿fastapi
+uvicorn
+sqlalchemy
+python-jose
+passlib[bcrypt]
+python-multipart
+requests
+nsepython
+uvicorn
+selenium
+webdriver-manager
+playwright
+fastapi-utils
+apscheduler
+pymongo
+motor
+python-dotenv
