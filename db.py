@@ -20,10 +20,12 @@
 
 import os
 from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+
 
 MONGO_URI = os.getenv("MONGO_URI","mongodb+srv://admin:admin@cluster0.87wdxlx.mongodb.net/?appName=Cluster0")
 
-client = MongoClient(
+client = AsyncIOMotorClient(
     MONGO_URI,
     tls=True,
     tlsAllowInvalidCertificates=True,   # Railway fix
