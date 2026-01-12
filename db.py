@@ -19,9 +19,17 @@
 #         db.close()
 
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://admin:admin@cluster0.87wdxlx.mongodb.net/?appName=Cluster0")
+MONGO_URI = os.getenv("MONGO_URI","mongodb+srv://admin:admin@cluster0.87wdxlx.mongodb.net/?appName=Cluster0")
 
-client = AsyncIOMotorClient(MONGO_URL)
-db = client["fast_api"]   # database name
+client = MongoClient(
+    MONGO_URI,
+    tls=True,
+    tlsAllowInvalidCertificates=True,   # Railway fix
+    serverSelectionTimeoutMS=30000
+)
+
+db = client["fast_api"] 
+
+print(client.admin.command("ping"))

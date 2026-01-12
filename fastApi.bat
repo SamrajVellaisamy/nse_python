@@ -1,1 +1,0 @@
-cd /d D:\App\nse_python & venv\Scripts\activate & uvicorn main:app --reload
