@@ -8,7 +8,101 @@ from db import *
 from common import *
 from nsepython import *  
 
-fnoList = [{"symbol":"ONGC"},{"symbol":"EICHERMOT"},{"symbol":"LT"},{"symbol":"BHEL"},{"symbol":"HINDUNILVR"},{"symbol":"ITC"},{"symbol":"SUNPHARMA"},{"symbol":"CIPLA"},{"symbol":"HINDALCO"},{"symbol":"TATASTEEL"},{"symbol":"NTPC"},{"symbol":"POWERGRID"},{"symbol":"DLF"},{"symbol":"GODREJPROP"},{"symbol":"BEL"},{"symbol":"HAL"},{"symbol":"NATIONALUM"}]
+fnoList=[
+  {
+    "symbol": "HDFCBANK",
+    "identifier": "BANKING_FINANCE"
+  },
+  {
+    "symbol": "ICICIBANK",
+    "identifier": "BANKING_FINANCE"
+  },
+  {
+    "symbol": "TCS",
+    "identifier": "IT"
+  },
+  {
+    "symbol": "INFY",
+    "identifier": "IT"
+  },
+  {
+    "symbol": "RELIANCE",
+    "identifier": "ENERGY"
+  },
+  {
+    "symbol": "ONGC",
+    "identifier": "ENERGY"
+  },
+  {
+    "symbol": "TMCV",
+    "identifier": "AUTO"
+  },
+  {
+        "symbol": "EICHERMOT",
+        "identifier": "EICHERMOTEQN"
+    },
+
+  {
+    "symbol": "LT",
+    "identifier": "INFRA_CAPITAL_GOODS"
+  },
+  {
+    "symbol": "BHEL",
+    "identifier": "INFRA_CAPITAL_GOODS"
+  },
+  {
+    "symbol": "HINDUNILVR",
+    "identifier": "FMCG"
+  },
+  {
+    "symbol": "ITC",
+    "identifier": "FMCG"
+  },
+  {
+    "symbol": "SUNPHARMA",
+    "identifier": "PHARMA"
+  },
+  {
+    "symbol": "CIPLA",
+    "identifier": "PHARMA"
+  },
+  {
+    "symbol": "HINDALCO",
+    "identifier": "METALS"
+  },
+  {
+    "symbol": "TATASTEEL",
+    "identifier": "METALS"
+  },
+  {
+    "symbol": "NTPC",
+    "identifier": "POWER_UTILITIES"
+  },
+  {
+    "symbol": "POWERGRID",
+    "identifier": "POWER_UTILITIES"
+  },
+  {
+    "symbol": "DLF",
+    "identifier": "REALTY"
+  },
+  {
+    "symbol": "GODREJPROP",
+    "identifier": "REALTY"
+  },
+  {
+    "symbol": "BEL",
+    "identifier": "DEFENCE_PSU"
+  },
+  {
+    "symbol": "HAL",
+    "identifier": "DEFENCE_PSU"
+  },
+  {
+    "symbol": "M&M",
+    "identifier": "AUTO"
+  }
+]
 
 routes = APIRouter()
 
@@ -18,12 +112,13 @@ async def call_api(): #db:session=Depends(get_db)
     try: 
         for i in range(len(fnoList)):
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
-            results = r['data'] 
-            [changeOi,priceChange,expiryDate] = addValues(results) 
+            results = r['data']
+            [changeOi,priceChange,expiryDate] = addValues(results)
             collectData.append({"changeOi":changeOi,"price":priceChange,"symbol":fnoList[i]['symbol'],"expiryDate":expiryDate}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
-                print("not usse")
+                print("not usse") 
+        # getData = await db.futures.find({}).to_list(length=100) 
         return {"data":[ str(_id) for _id in future]}
     except Exception as e:
         print("Error:", e)

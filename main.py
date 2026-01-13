@@ -1,6 +1,6 @@
 from fastapi import FastAPI,Request
 from fastapi.middleware.cors import CORSMiddleware
-import requests,os
+import requests
 import datetime as dt
 from datetime import date,timedelta 
 import json
@@ -19,7 +19,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 scheduler = BackgroundScheduler()
 
 app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as much as we want",tags=["Live"]) 
-current_env = os.getenv("APP_ENV", "dev")
 
 # Base.metadata.create_all(engine) 
 
@@ -54,10 +53,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BaseUrl =  'http://127.0.0.1:8000/' if ((current_env) != 'dev') else 'https://nsepython-production.up.railway.app/'
+BaseUrl="http://127.0.0.1:8000/"
 
 @app.get('/nse/nselist')
-def lists():
+def lists(request:Request):
+    BaseUrl = str(request.base_url)
     niftyList = [    "NIFTY 50",
     "NIFTY NEXT 50",
     "NIFTY BANK",
@@ -86,7 +86,8 @@ def lists():
         return {'status': 400,'msg':"Error in list"}
 
 @app.get('/nse/futureindices')
-def getIndices():
+def getIndices(request:Request):
+    BaseUrl = str(request.base_url) 
     try:           
         result = nsefetch("https://www.nseindia.com/api/underlying-information")
         return {'status':200,'result':result["data"]["UnderlyingList"]+result["data"]["IndexList"]}
@@ -250,7 +251,7 @@ def create_scheduler():
 scheduler = create_scheduler()
 
 @app.get("/nse/shutdown")
-def shutdown_event():  
+def shutdown_event():
     scheduler.pause()
     return {"message": "Scheduler shut down successfully."}
 
