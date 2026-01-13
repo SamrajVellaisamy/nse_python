@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import datetime as dt
@@ -53,8 +53,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+BaseUrl="http://127.0.0.1:8000/"
+
 @app.get('/nse/nselist')
-def lists():
+def lists(request:Request):
+    BaseUrl = str(request.base_url)
     niftyList = [    "NIFTY 50",
     "NIFTY NEXT 50",
     "NIFTY BANK",
@@ -83,8 +86,8 @@ def lists():
         return {'status': 400,'msg':"Error in list"}
 
 @app.get('/nse/futureindices')
-def getIndices():
-     # headers = json.loads(open('headers').read()) 
+def getIndices(request:Request):
+    BaseUrl = str(request.base_url) 
     try:           
         result = nsefetch("https://www.nseindia.com/api/underlying-information")
         return {'status':200,'result':result["data"]["UnderlyingList"]+result["data"]["IndexList"]}
@@ -232,18 +235,20 @@ def createToken():
 
 
 def call_api():
-    requests.post("https://nse-python-1.onrender.com/updateFNO")
+    print(BaseUrl)
+    requests.post(BaseUrl+"updateFNO")
 
 def call_delete_api():
-    requests.get("https://nse-python-1.onrender.com/fnoDelete")
+    print(BaseUrl)
+    requests.get(BaseUrl+"fnoDelete")
 
 def create_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(call_api, "interval", minutes=0.5)
+    scheduler.add_job(call_api, "interval", minutes=5)
     scheduler.start()
     return scheduler
 
-# scheduler = create_scheduler()
+scheduler = create_scheduler()
 
 @app.get("/nse/shutdown")
 def shutdown_event():
@@ -254,6 +259,4 @@ def shutdown_event():
 def startup(): 
     scheduler.resume()
     return {"message": "Scheduler started successfully."}
-
-
-
+ 
