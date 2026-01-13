@@ -9,32 +9,100 @@ from common import *
 from nsepython import *  
 
 fnoList=[
-    
-    {
-        "symbol": "SBIN",
-        "identifier": "SBINEQN"
+  {
+    "symbol": "HDFCBANK",
+    "identifier": "BANKING_FINANCE"
+  },
+  {
+    "symbol": "ICICIBANK",
+    "identifier": "BANKING_FINANCE"
+  },
+  {
+    "symbol": "TCS",
+    "identifier": "IT"
+  },
+  {
+    "symbol": "INFY",
+    "identifier": "IT"
+  },
+  {
+    "symbol": "RELIANCE",
+    "identifier": "ENERGY"
+  },
+  {
+    "symbol": "ONGC",
+    "identifier": "ENERGY"
+  },
+  {
+    "symbol": "TMCV",
+    "identifier": "AUTO"
+  },
+  {
+        "symbol": "EICHERMOT",
+        "identifier": "EICHERMOTEQN"
     },
-    {
-        "symbol": "AXISBANK",
-        "identifier": "AXISBANKEQN"
-    },
-    {
-        "symbol": "INDUSINDBK",
-        "identifier": "INDUSINDBKEQN"
-    },
-    {
-        "symbol": "HDFCBANK",
-        "identifier": "HDFCBANKEQN"
-    },
-    {
-        "symbol": "KOTAKBANK",
-        "identifier": "KOTAKBANKEQN"
-    },
-    {
-        "symbol": "ICICIBANK",
-        "identifier": "ICICIBANKEQN"
-    }
-] 
+
+  {
+    "symbol": "LT",
+    "identifier": "INFRA_CAPITAL_GOODS"
+  },
+  {
+    "symbol": "BHEL",
+    "identifier": "INFRA_CAPITAL_GOODS"
+  },
+  {
+    "symbol": "HINDUNILVR",
+    "identifier": "FMCG"
+  },
+  {
+    "symbol": "ITC",
+    "identifier": "FMCG"
+  },
+  {
+    "symbol": "SUNPHARMA",
+    "identifier": "PHARMA"
+  },
+  {
+    "symbol": "CIPLA",
+    "identifier": "PHARMA"
+  },
+  {
+    "symbol": "HINDALCO",
+    "identifier": "METALS"
+  },
+  {
+    "symbol": "TATASTEEL",
+    "identifier": "METALS"
+  },
+  {
+    "symbol": "NTPC",
+    "identifier": "POWER_UTILITIES"
+  },
+  {
+    "symbol": "POWERGRID",
+    "identifier": "POWER_UTILITIES"
+  },
+  {
+    "symbol": "DLF",
+    "identifier": "REALTY"
+  },
+  {
+    "symbol": "GODREJPROP",
+    "identifier": "REALTY"
+  },
+  {
+    "symbol": "BEL",
+    "identifier": "DEFENCE_PSU"
+  },
+  {
+    "symbol": "HAL",
+    "identifier": "DEFENCE_PSU"
+  },
+  {
+    "symbol": "M&M",
+    "identifier": "AUTO"
+  }
+]
 
 routes = APIRouter()
 
