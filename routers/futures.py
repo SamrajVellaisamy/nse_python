@@ -113,7 +113,7 @@ async def call_api(): #db:session=Depends(get_db)
         for i in range(len(fnoList)):
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
-            [changeOi,priceChange,expiryDate] = addValues(results)
+            [changeOi,priceChange,expiryDate] = addValues(results) 
             collectData.append({"changeOi":changeOi,"price":priceChange,"symbol":fnoList[i]['symbol'],"expiryDate":expiryDate}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
@@ -130,7 +130,7 @@ def addValues(arrays):
     for arr in arrays:
         changeOi  += arr["changeinOpenInterest"]
         priceChange += arr["pchange"]
-        expiryDate = arr["expiryDate"]
+        expiryDate = arr["expiryDate"] if arr["expiryDate"] else '-'
                 
     return [changeOi,priceChange,expiryDate]
 
