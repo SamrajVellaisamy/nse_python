@@ -20,7 +20,6 @@ scheduler = BackgroundScheduler()
 
 app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as much as we want",tags=["Live"]) 
 current_env = os.getenv("APP_ENV", "dev")
-BaseUrl =  'http://127.0.0.1:8000/' if ((current_env) != 'dev') else 'https://nsepython-production.up.railway.app/'
 
 # Base.metadata.create_all(engine) 
 
@@ -55,7 +54,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BaseUrl="http://127.0.0.1:8000/"
+BaseUrl =  'http://127.0.0.1:8000/' if ((current_env) != 'dev') else 'https://nsepython-production.up.railway.app/'
 
 @app.get('/nse/nselist')
 def lists():
