@@ -33,5 +33,3 @@ client = AsyncIOMotorClient(
 )
 
 db = client["fast_api"] 
-
-print(client.admin.command("ping"))

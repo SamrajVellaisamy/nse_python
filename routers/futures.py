@@ -1,4 +1,4 @@
-from fastapi import APIRouter,status
+from fastapi import APIRouter,status,Query
 import requests,json
 from apscheduler.schedulers.background import BackgroundScheduler
 from models import *
@@ -7,6 +7,8 @@ from fastapi.params import Depends
 from db import *
 from common import *
 from nsepython import *  
+from datetime import *
+import pytz
 
 fnoList=[
   {
@@ -106,15 +108,16 @@ fnoList=[
 
 routes = APIRouter()
 
-@routes.post("/updateFNO")
+@routes.post("/nse/updateFNO")
 async def call_api(): #db:session=Depends(get_db)  
     collectData=[]
+    dt: str = Query(...)
     try: 
         for i in range(len(fnoList)):
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
-            [changeOi,priceChange,expiryDate] = addValues(results)
-            collectData.append({"changeOi":changeOi,"price":priceChange,"symbol":fnoList[i]['symbol'],"expiryDate":expiryDate}) 
+            [changeOi,priceChange,pchangeOi,pchange] = addValues(results)
+            collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(pytz.timezone("Asia/Kolkata"))}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
                 print("not usse") 
@@ -126,29 +129,33 @@ async def call_api(): #db:session=Depends(get_db)
 def addValues(arrays):  
     merged = {} 
     changeOi = 0
-    priceChange = 0 
+    priceChange = 0
+    pchangeOi = 0
+    pchange = 0
+
     for arr in arrays:
         changeOi  += arr["changeinOpenInterest"]
-        priceChange += arr["pchange"]
-        expiryDate = arr["expiryDate"]
+        pchangeOi += arr["pchangeinOpenInterest"]
+        priceChange += arr["change"]
+        pchange += arr["pchange"]
                 
-    return [changeOi,priceChange,expiryDate]
+    return [changeOi,pchangeOi,priceChange,pchange]
 
-@routes.get("/getFNO")
+@routes.get("/nse/getFNO")
 async def getOIData(): 
-    getdata = await db.futures.find({}).to_list(length=100)
+    getdata = await db.futures.find({},  {"_id":0}).to_list(length=100)
     if not getdata:
         pass
-    return {"status":status.HTTP_200_OK,"result":{"data":[ str(_id) for _id in getdata]}}
+    return {"status":status.HTTP_200_OK,"result":list(getdata)}
 
-@routes.get("/getFNO/{name}")
+@routes.get("/nse/getFNO/{name}")
 async def getOIData(name:str):
     getdata = await db.futures.find({"symbol":name},{"_id":0}).to_list(length=100)
     if not len(str(getdata)):
         pass
-    return {"status":status.HTTP_200_OK,"result":{"data":[str(_id) for _id in getdata]}}
+    return {"status":status.HTTP_200_OK,"result":list(getdata)}
 
-@routes.delete('/fnoDelete')
+@routes.delete('/nse/fnoDelete')
 async def deleteFno():
     try:
         delete = await db.futures.delete_many({})

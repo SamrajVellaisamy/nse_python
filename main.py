@@ -53,7 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BaseUrl="http://127.0.0.1:8000/"
+BaseUrl="https://nsepython-production.up.railway.app/nse/"
 
 @app.get('/nse/nselist')
 def lists(request:Request):
@@ -229,6 +229,30 @@ def NseViewFNO(request:FutureRequest):
     except: 
         return {'status':400,header:[],'result':[]}
 
+@app.post('/nse/prev_history')
+def prev_history(request:Stock): 
+    fromDate = (dt.datetime.strptime(request.fromdate,formatOne)).strftime(formatTwo)
+    toDate = (dt.datetime.strptime(request.todate,formatOne)).strftime(formatTwo) 
+    limit = request.limit
+    header = nsefetch('https://www.nseindia.com/json/quotes/equity-historical.json')
+    stockList = nsefetch('https://www.nseindia.com/api/equity-stockIndices?index='+request.symbol)['data'] 
+    historyResults = []
+    try:
+        for i in range(0,len(stockList)):
+            if('NIFTY' not in stockList[i]['symbol']):
+                payload = nsefetch(
+                "https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalTradeData&symbol=" + re.sub("&", "%26",stockList[i]['symbol']) + "&series=EQ&fromDate=" + fromDate + "&toDate=" + toDate)
+                if len(payload) > 0:
+                    historyResults.append(payload) 
+        return {'status': 200,'result':historyResults,'header':header['columns'],'total':len(stockList)}
+    except Exception as e:
+        return {'status': 200,'result':historyResults,'header':header['columns'],'total':len(stockList)}
+
+    
+def changePercentage(a,b):
+    p = (((a/b)-1)*100)
+    return round(p) 
+
 @app.post('/nse/tokens')
 def createToken():
     return {'status':200,'result':asyncio.run(fetch_nse_cookies())}
@@ -256,7 +280,7 @@ def shutdown_event():
     return {"message": "Scheduler shut down successfully."}
 
 @app.get("/nse/startup")
-def startup(): 
+def startup():
     scheduler.resume()
     return {"message": "Scheduler started successfully."}
  
