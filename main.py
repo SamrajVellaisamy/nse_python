@@ -11,7 +11,7 @@ from tokenGen import fetch_nse_cookies
 from collections import defaultdict
 from trade import *
 from routers import product,futures
-from models import * 
+from models import *  
 # from db import engine
 from nsepython import *  
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -284,3 +284,11 @@ def startup():
     scheduler.resume()
     return {"message": "Scheduler started successfully."}
  
+@app.get("/nse/currentOI")
+def currentOi(fno:str):
+    collectData=[] 
+    r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fno+"&instrumentType=FUT")   # Replace with your API   
+    results = r['data']
+    [changeOi,priceChange,pchangeOi,pchange] = futures.addValues(results)
+    collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fno,"pchangeOi":pchangeOi,"pchange":pchange})
+    return {'status':200,'result':collectData}
