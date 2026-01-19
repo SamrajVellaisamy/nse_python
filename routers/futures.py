@@ -153,11 +153,10 @@ async def getOIData(name:str):
     getdata = await db.futures.find({"symbol":name},{"_id":0}).to_list(length=100)
     if not len(str(getdata)):
         pass 
-    data = (list(getdata))
-    print(len(data)) 
+    data = (list(getdata)) 
     for i in range(len(data)-1): 
-      data[i]['oiarrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['changeOi'] > data[i+1]['changeOi'] else '<mat-icon>arrow_downward</mat-icon>'
-      data[i]['pricearrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['priceChange'] > data[i+1]['priceChange'] else '<mat-icon>arrow_downward</mat-icon>'
+      data[i]['oiarrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['changeOi'] < data[i+1]['changeOi'] else '<mat-icon>arrow_downward</mat-icon>'
+      data[i]['pricearrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['priceChange'] < data[i+1]['priceChange'] else '<mat-icon>arrow_downward</mat-icon>'
     return {"status":status.HTTP_200_OK,"result":data}
 
 @routes.delete('/nse/fnoDelete')
