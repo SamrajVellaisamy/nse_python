@@ -136,7 +136,7 @@ def addValues(arrays):
     for arr in arrays:
         changeOi  += arr["changeinOpenInterest"]
         pchangeOi += arr["pchangeinOpenInterest"]
-        priceChange += arr["change"]
+        priceChange += arr["lastPrice"] - arr["openPrice"]
         pchange += arr["pchange"]
                 
     return [changeOi,pchangeOi,priceChange,pchange]
@@ -156,7 +156,7 @@ async def getOIData(name:str):
     data = ((list(getdata))) 
     for i in range(len(data)-1): 
       data[i+1]['oiarrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['changeOi'] < data[i+1]['changeOi'] else '<mat-icon>arrow_downward</mat-icon>'
-      data[i+1]['pricearrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['pchangeOi'] < data[i+1]['pchangeOi'] else '<mat-icon>arrow_downward</mat-icon>'
+      data[i+1]['pricearrow'] = '<mat-icon>arrow_upward</mat-icon>' if data[i]['priceChange'] < data[i+1]['priceChange'] else '<mat-icon>arrow_downward</mat-icon>'
     return {"status":status.HTTP_200_OK,"result":data[::-1]}
 
 @routes.delete('/nse/fnoDelete')
