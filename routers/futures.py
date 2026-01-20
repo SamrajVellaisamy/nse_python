@@ -116,7 +116,7 @@ async def call_api(): #db:session=Depends(get_db)
         for i in range(len(fnoList)):
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
-            [changeOi,priceChange,pchangeOi,pchange] = addValues(results)
+            [changeOi,pchangeOi,priceChange,pchange] = addValues(results) 
             collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(pytz.timezone("Asia/Kolkata"))}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
@@ -133,7 +133,7 @@ def addValues(arrays):
     pchangeOi = 0
     pchange = 0
 
-    for arr in arrays:
+    for arr in arrays: 
         changeOi  += arr["changeinOpenInterest"]
         pchangeOi += arr["pchangeinOpenInterest"]
         priceChange += arr["lastPrice"] - arr["openPrice"]
