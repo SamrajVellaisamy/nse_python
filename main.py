@@ -267,23 +267,23 @@ def call_delete_api():
     print(BaseUrl)
     requests.get(BaseUrl+"fnoDelete")
 
-def create_scheduler():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(call_api, "interval", minutes=5)
-    scheduler.start()
-    return scheduler
+# def create_scheduler():
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(call_api, "interval", minutes=5)
+#     scheduler.start()
+#     return scheduler
 
-scheduler = create_scheduler()
+# scheduler = create_scheduler()
 
-@app.get("/nse/shutdown")
-def shutdown_event():
-    scheduler.pause()
-    return {"message": "Scheduler shut down successfully."}
+# @app.get("/nse/shutdown")
+# def shutdown_event():
+#     scheduler.pause()
+#     return {"message": "Scheduler shut down successfully."}
 
-@app.get("/nse/startup")
-def startup():
-    scheduler.resume()
-    return {"message": "Scheduler started successfully."}
+# @app.get("/nse/startup")
+# def startup():
+#     scheduler.resume()
+#     return {"message": "Scheduler started successfully."}
  
 @app.get("/nse/currentOI")
 def currentOi(fno:str):

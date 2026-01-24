@@ -8,7 +8,7 @@ from db import *
 from common import *
 from nsepython import *  
 from datetime import *
-import pytz
+from zoneinfo import ZoneInfo
 
 fnoList=[
   {
@@ -34,10 +34,6 @@ fnoList=[
   {
     "symbol": "ONGC",
     "identifier": "ENERGY"
-  },
-  {
-    "symbol": "TMCV",
-    "identifier": "AUTO"
   },
   {
         "symbol": "EICHERMOT",
@@ -77,16 +73,8 @@ fnoList=[
     "identifier": "METALS"
   },
   {
-    "symbol": "NTPC",
-    "identifier": "POWER_UTILITIES"
-  },
-  {
     "symbol": "POWERGRID",
     "identifier": "POWER_UTILITIES"
-  },
-  {
-    "symbol": "DLF",
-    "identifier": "REALTY"
   },
   {
     "symbol": "GODREJPROP",
@@ -117,7 +105,7 @@ async def call_api(): #db:session=Depends(get_db)
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
             [changeOi,pchangeOi,priceChange,pchange] = addValues(results) 
-            collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(pytz.timezone("Asia/Kolkata"))}) 
+            collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(ZoneInfo("Asia/Kolkata")).isoformat()}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
                 print("not usse") 
@@ -163,6 +151,17 @@ async def getOIData(name:str):
 async def deleteFno():
     try:
         delete = await db.futures.delete_many({})
+        if not delete:
+            pass 
+        return {"status":status.HTTP_200_OK,"result":"successfully deleted !"} 
+    except:
+        pass
+
+@routes.get("/nse/deleteQuery")
+async def deleteQuery(date: str = Query(...)):
+    print('data',date)
+    try:
+        delete = await db.futures.delete_many({"createdAt": {"$gt": datetime.fromisoformat(date)}})
         if not delete:
             pass 
         return {"status":status.HTTP_200_OK,"result":"successfully deleted !"} 
