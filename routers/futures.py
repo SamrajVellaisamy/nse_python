@@ -104,8 +104,8 @@ async def call_api(): #db:session=Depends(get_db)
         for i in range(len(fnoList)):
             r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fnoList[i]['symbol']+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
-            [changeOi,pchangeOi,priceChange,pchange] = addValues(results) 
-            collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(ZoneInfo("Asia/Kolkata")).isoformat()}) 
+            [changeOi,pchangeOi,priceChange,pchange,TradedVolume] = addValues(results) 
+            collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fnoList[i]['symbol'],"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(ZoneInfo("Asia/Kolkata")).isoformat(),"TradedVolume":TradedVolume}) 
         future = await db.futures.insert_many(collectData) 
         if not len(str(future)):
                 print("not usse") 
@@ -120,14 +120,16 @@ def addValues(arrays):
     priceChange = 0
     pchangeOi = 0
     pchange = 0
+    TradedVolume = 0
 
     for arr in arrays: 
         changeOi  += arr["changeinOpenInterest"]
         pchangeOi += arr["pchangeinOpenInterest"]
         priceChange += arr["lastPrice"] - arr["openPrice"]
         pchange += arr["pchange"]
+        TradedVolume += arr["totalTradedVolume"]
                 
-    return [changeOi,pchangeOi,priceChange,pchange]
+    return [changeOi,pchangeOi,priceChange,pchange,TradedVolume]
 
 @routes.get("/nse/getFNO")
 async def getOIData(): 
