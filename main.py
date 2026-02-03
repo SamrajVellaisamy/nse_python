@@ -290,6 +290,6 @@ def currentOi(fno:str):
     collectData=[] 
     r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fno+"&instrumentType=FUT")   # Replace with your API   
     results = r['data']
-    [changeOi,priceChange,pchangeOi,pchange,TradedVolume] = futures.addValues(results)
+    [changeOi,pchangeOi,priceChange,pchange,TradedVolume] = futures.addValues(results)
     collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fno,"pchangeOi":pchangeOi,"pchange":pchange,"TradedVolume":TradedVolume,"oiarrow":"","pricearrow":""})
     return {'status':200,'result':collectData}
