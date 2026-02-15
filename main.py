@@ -54,7 +54,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BaseUrl="https://nsepython-production.up.railway.app/nse/"
+BaseUrl="http://127.0.0.1:8000/nse/"
 
 @app.get('/nse/nselist')
 def lists(request:Request):
@@ -90,20 +90,20 @@ def lists(request:Request):
 def getIndices(request:Request):
     BaseUrl = str(request.base_url) 
     try:           
-        result = nsefetch("https://www.nseindia.com/api/underlying-information")
+        result = callApi("https://www.nseindia.com/api/underlying-information")
         return {'status':200,'result':result["data"]["UnderlyingList"]+result["data"]["IndexList"]}
     except Exception as e:
         return {'status':400,'error':e}
 
 @app.get("/nse/futureContracts/{symbol}")
 def futureContracts(symbol:str):
-    header = nsefetch("https://www.nseindia.com/json/quotes/derivative-all-contracts.json")['columns']
+    header = callApi("https://www.nseindia.com/json/quotes/derivative-all-contracts.json")['columns']
     result = []
     tradeInfo = []
     indimate = []
     try: 
-        # output = nsefetch('https://www.nseindia.com/api/quote-derivative?symbol='+symbol)['stocks'] 
-        output = nsefetch('https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol='+symbol+'&instrumentType=FUT')
+        # output = callApi('https://www.nseindia.com/api/quote-derivative?symbol='+symbol)['stocks'] 
+        output = callApi('https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol='+symbol+'&instrumentType=FUT')
         for con in output['data']:  
             indimate.append(get_futures_data(con))
             
@@ -113,13 +113,13 @@ def futureContracts(symbol:str):
     
 @app.get('/nse/option/{symbol}')
 def expiryList(symbol:str):   
-    expiry = nsefetch('https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainDropdown&symbol='+symbol)
+    expiry = callApi('https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainDropdown&symbol='+symbol)
     try:           
-        result0 = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][0])
+        result0 = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][0])
 
-        result1 = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][1])
+        result1 = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][1])
 
-        result2 = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][2])
+        result2 = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getOptionChainData&symbol="+symbol+"&params=expiryDate="+expiry['expiryDates'][2])
       
         return {'status':200,'result':option([result0['data'],result1['data'],result2['data']])}
     except Exception as e:
@@ -173,7 +173,7 @@ def optionHistory(request:OptionHistory):
     symbol = request.symbol
     expirydate = request.expirydate
     try:
-        optionResult = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getDerivativesHistoricalData&symbol="+symbol+"&instrumentType=OPTSTK&year=&expiryDate="+expirydate+"&strikePrice="+strike+"&optionType=&fromDate="+fromDate+"&toDate="+toDate) 
+        optionResult = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getDerivativesHistoricalData&symbol="+symbol+"&instrumentType=OPTSTK&year=&expiryDate="+expirydate+"&strikePrice="+strike+"&optionType=&fromDate="+fromDate+"&toDate="+toDate) 
         chain = []
         result = []
         combined = defaultdict(lambda: {
@@ -222,9 +222,9 @@ def NseViewFNO(request:FutureRequest):
     toDate = request.toDate if request.toDate  else todayIs
     
     try:  
-        fnoResult = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getDerivativesHistoricalData&symbol="+symbol+"&instrumentType=FUTSTK&year=&expiryDate=&strikePrice=&optionType=&fromDate="+previousDate+"&toDate="+toDate)
+        fnoResult = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getDerivativesHistoricalData&symbol="+symbol+"&instrumentType=FUTSTK&year=&expiryDate=&strikePrice=&optionType=&fromDate="+previousDate+"&toDate="+toDate)
 
-        header = nsefetch('https://www.nseindia.com/json/quotes/derivatives-historical.json')['columns']
+        header = callApi('https://www.nseindia.com/json/quotes/derivatives-historical.json')['columns']
 
         return {'status':200,'header':header,'result':fnoResult} 
     except: 
@@ -235,13 +235,13 @@ def prev_history(request:Stock):
     fromDate = (dt.datetime.strptime(request.fromdate,formatOne)).strftime(formatTwo)
     toDate = (dt.datetime.strptime(request.todate,formatOne)).strftime(formatTwo) 
     limit = request.limit
-    header = nsefetch('https://www.nseindia.com/json/quotes/equity-historical.json')
-    stockList = nsefetch('https://www.nseindia.com/api/equity-stockIndices?index='+request.symbol)['data'] 
+    header = callApi('https://www.nseindia.com/json/quotes/equity-historical.json')
+    stockList = callApi('https://www.nseindia.com/api/equity-stockIndices?index='+request.symbol)['data'] 
     historyResults = []
     try:
         for i in range(0,len(stockList)):
             if('NIFTY' not in stockList[i]['symbol']):
-                payload = nsefetch(
+                payload = callApi(
                 "https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalTradeData&symbol=" + re.sub("&", "%26",stockList[i]['symbol']) + "&series=EQ&fromDate=" + fromDate + "&toDate=" + toDate)
                 if len(payload) > 0:
                     historyResults.append(payload) 
@@ -273,22 +273,32 @@ def create_scheduler():
     scheduler.start()
     return scheduler
 
+def token_create_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(createToken, "interval", minutes=20)
+    scheduler.start()
+    return scheduler
+
+token_scheduler = create_scheduler()
+
 scheduler = create_scheduler()
 
 @app.get("/nse/shutdown")
 def shutdown_event():
     scheduler.pause()
+    token_scheduler.pause()
     return {"message": "Scheduler shut down successfully."}
 
 @app.get("/nse/startup")
 def startup():
     scheduler.resume()
+    token_scheduler.resume()
     return {"message": "Scheduler started successfully."}
  
 @app.get("/nse/currentOI")
 def currentOi(fno:str):
     collectData=[] 
-    r = nsefetch("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fno+"&instrumentType=FUT")   # Replace with your API   
+    r = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fno+"&instrumentType=FUT")   # Replace with your API   
     results = r['data']
     [changeOi,pchangeOi,priceChange,pchange,TradedVolume] = futures.addValues(results)
     collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":fno,"pchangeOi":pchangeOi,"pchange":pchange,"TradedVolume":TradedVolume,"oiarrow":"","pricearrow":""})

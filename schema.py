@@ -47,9 +47,13 @@ class FuturesData:
     changeOI:int
     price:int
 
+class stockName(BaseModel):
+    symbol:str
+
 class FutureDataOut(FuturesData):
     id: PyObjectId = Field(alias="_id")
 
     class Config:
         allow_population_by_field_name = True
         json_encoders = {PyObjectId: str}
+ 
