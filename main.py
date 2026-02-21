@@ -2,19 +2,17 @@ from fastapi import FastAPI,Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import datetime as dt
-from datetime import date,timedelta 
-import json
+from datetime import date,timedelta  
 import asyncio
-from schema import Stock,BriefHistory,OptionHistory,FutureRequest,tokenRequest
+from schema import Stock,OptionHistory,FutureRequest
 from common import *
 from tokenGen import fetch_nse_cookies 
 from collections import defaultdict
 from trade import *
-from routers import product,futures
+from routers import product,futures,users,login
 from models import *  
-# from db import engine
 from nsepython import *  
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler 
 
 scheduler = BackgroundScheduler()
 
@@ -22,6 +20,8 @@ app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as
 
 # Base.metadata.create_all(engine) 
 
+app.include_router(login.route,tags=["Login"])
+app.include_router(users.route,tags=["User"])
 app.include_router(product.route,tags=["Pivot"])
 app.include_router(futures.routes,tags=["Futures"])
 # fnoList = fnolist()
@@ -98,8 +98,6 @@ def getIndices(request:Request):
 @app.get("/nse/futureContracts/{symbol}")
 def futureContracts(symbol:str):
     header = callApi("https://www.nseindia.com/json/quotes/derivative-all-contracts.json")['columns']
-    result = []
-    tradeInfo = []
     indimate = []
     try: 
         # output = callApi('https://www.nseindia.com/api/quote-derivative?symbol='+symbol)['stocks'] 
@@ -274,12 +272,13 @@ def create_scheduler():
     return scheduler
 
 def token_create_scheduler():
+    print("Token scheduler started")
     scheduler = BackgroundScheduler()
     scheduler.add_job(createToken, "interval", minutes=20)
     scheduler.start()
     return scheduler
 
-token_scheduler = create_scheduler()
+token_scheduler = token_create_scheduler()
 
 scheduler = create_scheduler()
 

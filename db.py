@@ -18,8 +18,7 @@
 #     finally:
 #         db.close()
 
-import os
-from pymongo import MongoClient
+import os 
 from motor.motor_asyncio import AsyncIOMotorClient
 
 

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import date 
 from typing import Optional
-from utils import PyObjectId
+# from utils import PyObjectId
 
 class Pivot(BaseModel):
     high: float | int=0
@@ -50,10 +50,20 @@ class FuturesData:
 class stockName(BaseModel):
     symbol:str
 
-class FutureDataOut(FuturesData):
-    id: PyObjectId = Field(alias="_id")
+# class FutureDataOut(FuturesData):
+#     id: PyObjectId = Field(alias="_id")
 
-    class Config:
-        allow_population_by_field_name = True
-        json_encoders = {PyObjectId: str}
- 
+#     class Config:
+#         allow_population_by_field_name = True
+#         json_encoders = {PyObjectId: str}
+
+class user(BaseModel):
+    username:str
+    password:str
+
+class DisplayUser(BaseModel):
+    username:str   
+
+class TokenData(BaseModel):
+    access_token:str
+    token_type:str
