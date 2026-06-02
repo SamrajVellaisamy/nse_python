@@ -11,89 +11,7 @@ from datetime import *
 from zoneinfo import ZoneInfo
 from schema import *
 
-fnoList=[
-  {
-    "symbol": "HDFCBANK",
-    "identifier": "BANKING_FINANCE"
-  },
-  # {
-  #   "symbol": "ICICIBANK",
-  #   "identifier": "BANKING_FINANCE"
-  # },
-  {
-    "symbol": "TCS",
-    "identifier": "IT"
-  },
-  {
-    "symbol": "INFY",
-    "identifier": "IT"
-  },
-  {
-    "symbol": "RELIANCE",
-    "identifier": "ENERGY"
-  },
-  # {
-  #   "symbol": "ONGC",
-  #   "identifier": "ENERGY"
-  # },
-  {
-        "symbol": "EICHERMOT",
-        "identifier": "EICHERMOTEQN"
-    },
-
-  # {
-  #   "symbol": "LT",
-  #   "identifier": "INFRA_CAPITAL_GOODS"
-  # },
-  # {
-  #   "symbol": "BHEL",
-  #   "identifier": "INFRA_CAPITAL_GOODS"
-  # },
-  # {
-  #   "symbol": "HINDUNILVR",
-  #   "identifier": "FMCG"
-  # },
-  {
-    "symbol": "ITC",
-    "identifier": "FMCG"
-  },
-  {
-    "symbol": "SUNPHARMA",
-    "identifier": "PHARMA"
-  },
-  {
-    "symbol": "CIPLA",
-    "identifier": "PHARMA"
-  },
-  {
-    "symbol": "HINDALCO",
-    "identifier": "METALS"
-  },
-  # {
-  #   "symbol": "TATASTEEL",
-  #   "identifier": "METALS"
-  # },
-  {
-    "symbol": "POWERGRID",
-    "identifier": "POWER_UTILITIES"
-  },
-  # {
-  #   "symbol": "GODREJPROP",
-  #   "identifier": "REALTY"
-  # },
-  # {
-  #   "symbol": "BEL",
-  #   "identifier": "DEFENCE_PSU"
-  # },
-  # {
-  #   "symbol": "HAL",
-  #   "identifier": "DEFENCE_PSU"
-  # },
-#   {
-#     "symbol": "M&M",
-#     "identifier": "AUTO"
-#   }
-]
+BASE_ENV = os.getenv("ENV_URL","https://www.nseindia.com/api/") 
 
 routes = APIRouter()
 
@@ -137,7 +55,7 @@ async def call_api(): #db:session=Depends(get_db)
             getStocks = ["HDFCBANK"]
         for symbol in getStocks:
             print('symbol',symbol)
-            r = callApi("https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+symbol+"&instrumentType=FUT")   # Replace with your API   
+            r = callApi(BASE_ENV+"NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+symbol+"&instrumentType=FUT")   # Replace with your API   
             results = r['data']
             [changeOi,pchangeOi,priceChange,pchange,TradedVolume] = addValues(results) 
             collectData.append({"changeOi":changeOi,"priceChange":priceChange,"symbol":symbol,"pchangeOi":pchangeOi,"pchange":pchange,"createdAt":datetime.now(ZoneInfo("Asia/Kolkata")).isoformat(),"TradedVolume":TradedVolume}) 
@@ -160,7 +78,7 @@ def addValues(arrays):
     for arr in arrays: 
         changeOi  += arr["changeinOpenInterest"]
         pchangeOi += arr["pchangeinOpenInterest"]
-        priceChange += arr["lastPrice"] - arr["openPrice"]
+        priceChange += arr["lastPrice"]
         pchange += arr["pchange"]
         TradedVolume += arr["totalTradedVolume"]
                 
