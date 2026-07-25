@@ -9,23 +9,25 @@ from common import *
 from tokenGen import fetch_nse_cookies 
 from collections import defaultdict
 from trade import *
-from routers import product,futures,users,login
+from routers import product,futures,users,login,cashMarketValue
 from models import *  
 from nsepython import *  
 from apscheduler.schedulers.background import BackgroundScheduler 
 from zoneinfo import ZoneInfo
-
+from contextlib import asynccontextmanager
+from filter import performers
 
 scheduler = BackgroundScheduler()
-
+    
 app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as much as we want",tags=["Live"]) 
 
 # Base.metadata.create_all(engine) 
 
-app.include_router(login.route,tags=["Login"])
-app.include_router(users.route,tags=["User"])
-app.include_router(product.route,tags=["Pivot"])
+# app.include_router(login.route,tags=["Login"])
+# app.include_router(users.route,tags=["User"])
+# app.include_router(product.route,tags=["Pivot"])
 app.include_router(futures.routes,tags=["Futures"])
+app.include_router(cashMarketValue.routers,tags=["Cash Market Value"])
 # fnoList = fnolist()
 historyResults = []
 today = date.today()
@@ -59,10 +61,7 @@ app.add_middleware(
 BaseUrl="http://127.0.0.1:8000/nse/"
 
 BASE_ENV = os.getenv("ENV_URL","https://www.nseindia.com/api/") 
-
-print("token api called")
-fetch_nse_cookies()
-
+ 
 @app.get('/nse/nselist')
 def lists(request:Request):
     BaseUrl = str(request.base_url)
@@ -269,6 +268,7 @@ def alignDateTime():
 def call_api(): 
     if alignDateTime()['Time'] and alignDateTime()['Day']:
         requests.post(BaseUrl+"updateFNO")
+        requests.post(BaseUrl+"cashMarketValue")  
     else:
         print("Market is closed. Scheduler will run when market opens.")
      
@@ -276,13 +276,13 @@ def call_delete_api():
     requests.get(BaseUrl+"fnoDelete")
 
 def create_scheduler():
+    # print('create call api')
     scheduler = BackgroundScheduler()
     scheduler.add_job(call_api, "interval", minutes=5)
     scheduler.start()
     return scheduler
 
-def token_create_scheduler():
-    print("Token scheduler started")
+def token_create_scheduler(): 
     scheduler = BackgroundScheduler()
     scheduler.add_job(createToken, "interval", minutes=20)
     scheduler.start()
@@ -290,7 +290,7 @@ def token_create_scheduler():
 
 token_scheduler = token_create_scheduler()
 
-scheduler = create_scheduler()
+scheduler = create_scheduler() 
 
 @app.get("/nse/shutdown")
 def shutdown_event():
@@ -300,6 +300,7 @@ def shutdown_event():
 
 @app.get("/nse/startup")
 def startup():
+    call_api()
     scheduler.resume()
     token_scheduler.resume()
     return {"message": "Scheduler started successfully."}
@@ -308,9 +309,18 @@ def startup():
 def currentOi(fno:str):
     collectData=[] 
     r = callApi(BASE_ENV+"NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData&symbol="+fno+"&instrumentType=FUT")   # Replace with your API   
-    results = r['data']
-    print(results)
+    results = r['data'] 
     [changeOi,pchangeOi,priceChange,pchange,TradedVolume] = futures.addValues(results)
     collectData.append({"changeOi":changeOi,"priceChange":priceChange/3,"symbol":fno,"pchangeOi":pchangeOi,"pchange":pchange,"TradedVolume":TradedVolume,"oiarrow":"","pricearrow":""})
-    return {'status':200,'result':collectData}
+    return {'status':200,'result':collectData} 
  
+# from multiprocessing import Process, Value
+# @app.get("/nse/topperformers")
+# def topperformers():
+#     try:
+#         top_performers = Process(target = performers)  # Set a timeout of 60 seconds
+#         top_performers.start()
+#         top_performers.join()  # Wait for the process to finish or
+#         return {'status':200,'result':top_performers}
+#     except Exception as e:
+#         return {'status':400,'error':str(e)}

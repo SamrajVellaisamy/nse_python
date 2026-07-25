@@ -22,13 +22,18 @@ import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
-MONGO_URI = os.getenv("MONGO_URI","mongodb+srv://admin:admin@cluster0.87wdxlx.mongodb.net/?appName=Cluster0")
+# MONGO_URI = os.getenv("MONGO_URI","mongodb+srv://admin:admin@cluster0.87wdxlx.mongodb.net/?appName=Cluster0")
+MONGO_URI =  os.getenv("MONGO_URI","mongodb://127.0.0.1:27017/?tls=false&ssl=false&tlsAllowInvalidCertificates=true")
 
 client = AsyncIOMotorClient(
     MONGO_URI,
-    tls=True,
+    tls=False,
+    ssl=False,
     tlsAllowInvalidCertificates=True,   # Railway fix
     serverSelectionTimeoutMS=30000
 )
 
-db = client["fast_api"] 
+client.admin.command('ping')
+
+db = client["IMS"]
+print("Successfully connected to the local MongoDB server!")

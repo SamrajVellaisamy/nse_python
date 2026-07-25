@@ -1,98 +1,311 @@
 import pandas as pd
-import pandas_ta as ta
 import yfinance as yf
-from datetime import datetime, timedelta
-import numpy as np
+from ta.trend import SMAIndicator
+from ta.momentum import RSIIndicator
 
-# --- Stock symbols ---
-symbols = [
-    "RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS", "ICICIBANK.NS",
-    "LT.NS", "SBIN.NS", "HINDUNILVR.NS", "AXISBANK.NS", "ITC.NS"
+# -----------------------------
+# List of NSE stocks
+# -----------------------------
+stocks = [ 
+    "360ONE.NS",
+    "ABB.NS",
+    "APLAPOLLO.NS",
+    "AUBANK.NS",
+    "ADANIENSOL.NS",
+    "ADANIENT.NS",
+    "ADANIGREEN.NS",
+    "ADANIPORTS.NS",
+    "ADANIPOWER.NS",
+    "ABCAPITAL.NS",
+    "ALKEM.NS",
+    "AMBER.NS",
+    "AMBUJACEM.NS",
+    "ANGELONE.NS",
+    "APOLLOHOSP.NS",
+    "ASHOKLEY.NS",
+    "ASIANPAINT.NS",
+    "ASTRAL.NS",
+    "AUROPHARMA.NS",
+    "DMART.NS",
+    "AXISBANK.NS",
+    "BSE.NS",
+    "BAJAJ-AUTO.NS",
+    "BAJFINANCE.NS",
+    "BAJAJFINSV.NS",
+    "BAJAJHLDNG.NS",
+    "BANDHANBNK.NS",
+    "BANKBARODA.NS",
+    "BANKINDIA.NS",
+    "BDL.NS",
+    "BEL.NS",
+    "BHARATFORG.NS",
+    "BHEL.NS",
+    "BPCL.NS",
+    "BHARTIARTL.NS",
+    "BIOCON.NS",
+    "BLUESTARCO.NS",
+    "BOSCHLTD.NS",
+    "BRITANNIA.NS",
+    "CGPOWER.NS",
+    "CANBK.NS",
+    "CDSL.NS",
+    "CHOLAFIN.NS",
+    "CIPLA.NS",
+    "COALINDIA.NS",
+    "COCHINSHIP.NS",
+    "COFORGE.NS",
+    "COLPAL.NS",
+    "CAMS.NS",
+    "CONCOR.NS",
+    "CROMPTON.NS",
+    "CUMMINSIND.NS",
+    "DLF.NS",
+    "DABUR.NS",
+    "DALBHARAT.NS",
+    "DELHIVERY.NS",
+    "DIVISLAB.NS",
+    "DIXON.NS",
+    "DRREDDY.NS",
+    "ETERNAL.NS",
+    "EICHERMOT.NS",
+    "EXIDEIND.NS",
+    "FORCEMOT.NS",
+    "NYKAA.NS",
+    "FORTIS.NS",
+    "GAIL.NS", 
+    "GMRAIRPORT.NS",
+    "GLENMARK.NS",
+    "GODFRYPHLP.NS",
+    "GODREJCP.NS",
+    "GODREJPROP.NS",
+    "GRASIM.NS",
+    "HCLTECH.NS",
+    "HDFCAMC.NS",
+    "HDFCBANK.NS",
+    "HDFCLIFE.NS",
+    "HAVELLS.NS",
+    "HEROMOTOCO.NS",
+    "HINDALCO.NS",
+    "HAL.NS",
+    "HINDPETRO.NS",
+    "HINDUNILVR.NS",
+    "HINDZINC.NS",
+    "POWERINDIA.NS",
+    "HYUNDAI.NS",
+    "ICICIBANK.NS",
+    "ICICIGI.NS",
+    "ICICIPRULI.NS",
+    "IDFCFIRSTB.NS",
+    "ITC.NS",
+    "INDIANB.NS",
+    "IEX.NS",
+    "IOC.NS",
+    "IRFC.NS",
+    "IREDA.NS",
+    "INDUSTOWER.NS",
+    "INDUSINDBK.NS",
+    "NAUKRI.NS",
+    "INFY.NS",
+    "INOXWIND.NS",
+    "INDIGO.NS",
+    "JINDALSTEL.NS",
+    "JSWENERGY.NS",
+    "JSWSTEEL.NS",
+    "JIOFIN.NS",
+    "JUBLFOOD.NS",
+    "KEI.NS",
+    "KPITTECH.NS",
+    "KALYANKJIL.NS",
+    "KAYNES.NS",
+    "KFINTECH.NS",
+    "KOTAKBANK.NS",
+    "LTF.NS",
+    "LICHSGFIN.NS",
+    "LTM.NS",
+    "LT.NS",
+    "LAURUSLABS.NS",
+    "LICI.NS",
+    "LODHA.NS",
+    "LUPIN.NS", 
+    "MANAPPURAM.NS",
+    "MANKIND.NS",
+    "MARICO.NS",
+    "MARUTI.NS",
+    "MFSL.NS",
+    "MAXHEALTH.NS",
+    "MAZDOCK.NS",
+    "MOTILALOFS.NS",
+    "MPHASIS.NS",
+    "MCX.NS",
+    "MUTHOOTFIN.NS",
+    "NBCC.NS",
+    "NHPC.NS",
+    "NMDC.NS",
+    "NTPC.NS",
+    "NATIONALUM.NS",
+    "NESTLEIND.NS",
+    "NAM-INDIA.NS",
+    "NUVAMA.NS",
+    "OBEROIRLTY.NS",
+    "ONGC.NS",
+    "OIL.NS",
+    "PAYTM.NS",
+    "OFSS.NS",
+    "POLICYBZR.NS",
+    "PGEL.NS",
+    "PIIND.NS",
+    "PNBHOUSING.NS",
+    "PAGEIND.NS",
+    "PATANJALI.NS",
+    "PERSISTENT.NS",
+    "PETRONET.NS",
+    "PIDILITIND.NS",
+    "POLYCAB.NS",
+    "PFC.NS",
+    "POWERGRID.NS",
+    "PREMIERENE.NS",
+    "PRESTIGE.NS",
+    "PNB.NS",
+    "RBLBANK.NS",
+    "RECLTD.NS",
+    "RADICO.NS",
+    "RVNL.NS",
+    "RELIANCE.NS",
+    "SBICARD.NS",
+    "SBILIFE.NS",
+    "SHREECEM.NS",
+    "SRF.NS",
+    "MOTHERSON.NS",
+    "SHRIRAMFIN.NS",
+    "SIEMENS.NS",
+    "SOLARINDS.NS",
+    "SONACOMS.NS",
+    "SBIN.NS",
+    "SAIL.NS",
+    "SUNPHARMA.NS",
+    "SUPREMEIND.NS",
+    "SUZLON.NS",
+    "SWIGGY.NS",
+    "TATACONSUM.NS",
+    "TVSMOTOR.NS",
+    "TCS.NS",
+    "TATAELXSI.NS",
+    "TMPV.NS",
+    "TATAPOWER.NS",
+    "TATASTEEL.NS",
+    "TECHM.NS",
+    "FEDERALBNK.NS",
+    "INDHOTEL.NS",
+    "PHOENIXLTD.NS",
+    "TITAN.NS",
+    "TORNTPHARM.NS",
+    "TRENT.NS",
+    "TIINDIA.NS",
+    "UNOMINDA.NS",
+    "UPL.NS",
+    "ULTRACEMCO.NS",
+    "UNIONBANK.NS",
+    "UNITDSPR.NS",
+    "VBL.NS",
+    "VEDL.NS",
+    "VMM.NS",
+    "IDEA.NS",
+    "VOLTAS.NS",
+    "WAAREEENER.NS",
+    "WIPRO.NS",
+    "YESBANK.NS",
+    "ZYDUSLIFE.NS" 
 ]
 
-start_date = (datetime.now() - timedelta(days=400)).strftime("%Y-%m-%d")
-qualified = []
+gainer_results = []
+loser_results = []
 
-# --- Custom Supertrend function (robust) ---
-def supertrend(df, period=7, multiplier=3):
-    # Calculate ATR safely
-    atr = ta.atr(df["High"], df["Low"], df["Close"], length=period)
-    if atr is None or atr.isna().all():
-        raise ValueError("ATR calculation failed (all NaN)")
+def performers():
+    print("Fetching stock data and analyzing performance...")
 
-    atr = atr.fillna(method="bfill").fillna(method="ffill")
+    for stock in stocks:
+        try:
+            df = yf.download(
+                stock,
+                period="220d",
+                interval="1d",
+                progress=False
+            )
 
-    hl2 = (df["High"] + df["Low"]) / 2
-    upperband = hl2 + (multiplier * atr)
-    lowerband = hl2 - (multiplier * atr)
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)  
 
-    final_upperband = upperband.copy()
-    final_lowerband = lowerband.copy()
-    supertrend = pd.Series(index=df.index)
-    direction = pd.Series(index=df.index)
+            if len(df) < 220:
+                continue
 
-    for i in range(1, len(df)):
-        curr, prev = i, i - 1
-        # Carry forward bands
-        if df["Close"].iloc[curr] > final_upperband.iloc[prev]:
-            direction.iloc[curr] = 1
-        elif df["Close"].iloc[curr] < final_lowerband.iloc[prev]:
-            direction.iloc[curr] = -1
-        else:
-            direction.iloc[curr] = direction.iloc[prev]
-            if direction.iloc[curr] == 1 and final_lowerband.iloc[curr] < final_lowerband.iloc[prev]:
-                final_lowerband.iloc[curr] = final_lowerband.iloc[prev]
-            if direction.iloc[curr] == -1 and final_upperband.iloc[curr] > final_upperband.iloc[prev]:
-                final_upperband.iloc[curr] = final_upperband.iloc[prev]
-        supertrend.iloc[curr] = (
-            final_lowerband.iloc[curr] if direction.iloc[curr] == 1 else final_upperband.iloc[curr]
-        )
+            # Moving Averages
+            df["SMA20"] = SMAIndicator(df["Close"], window=20).sma_indicator()
+            df["SMA200"] = SMAIndicator(df["Close"], window=200).sma_indicator()
 
-    df["Supertrend"] = supertrend.fillna(method="bfill").fillna(method="ffill")
-    return df
+            # RSI
+            df["RSI"] = RSIIndicator(df["Close"], window=14).rsi()
 
-# --- Main Scanner ---
-for sym in symbols:
-    try:
-        df = yf.download(sym, start=start_date, interval="1d", progress=False, auto_adjust=False)
-        
-        if df.empty or len(df) < 200:
-            print(f"⚠️ Skipping {sym}: insufficient data")
-            continue
-        df.dropna(subset=["High", "Low", "Close"], inplace=True)
-        # --- Indicators ---
-        df["SMA20"] = ta.sma(df["Close"], length=20)
-        df["SMA200"] = ta.sma(df["Close"], length=200)
-        df = supertrend(df, period=7, multiplier=3)
-        df["RSI14"] = ta.rsi(df["Close"], length=14)
-        df["Prev_High"] = df["High"].shift(1)
+            latest = df.iloc[-1]
+            previous = df.iloc[-2]
 
-        latest = df.iloc[-1] 
+            # Supertrend Placeholder
+            # Replace this with an actual Supertrend implementation.
+            supertrend_value = latest["SMA20"]
 
-        # --- Skip incomplete data ---
-        if df[["SMA20", "SMA200", "Supertrend", "RSI14", "Prev_High"]].iloc[-1].isna().any():
-            print(f"⚠️ Skipping {sym}: indicators not ready")
-            continue
+            gainer_condition = (
+                latest["SMA20"] > latest["SMA200"] and
+                latest["Close"] > latest["SMA20"] and
+                latest["Close"] > supertrend_value and
+                latest["RSI"] > 40 and
+                latest["Close"] > previous["High"] 
+            )
 
-        # --- Condition ---
-        if (
-            latest["SMA20"] > latest["SMA200"]
-            and latest["Close"] > latest["SMA20"]
-            and latest["Close"] > latest["Supertrend"]
-            and latest["RSI14"] > 40
-            and latest["Close"] > latest["Prev_High"]
-        ):
-            qualified.append(sym)
-            print(f"✅ {sym} meets condition on {latest.name.date()}")
-        else:
-            print(f"❌ {sym} does not meet condition")
+            loser_condition = (
+            latest["SMA20"] < latest["SMA200"] and
+                latest["Close"] < latest["SMA20"] and
+                latest["Close"] < supertrend_value and
+                latest["RSI"] < 40 and
+                latest["Close"] < previous["Low"]
+            )
 
-    except Exception as e:
-        print(f"⚠️ Error processing {sym}: {e}")
+            if gainer_condition:
+                gainer_results.append({
+                    "Stock": stock,
+                    "Close": round(float(latest["Close"]), 2),
+                    "RSI": round(float(latest["RSI"]), 2),
+                    "Change": round(float(latest["High"] - latest["Open"]), 2)
+                })
 
-# --- Final Output ---
-print("\n📊 Stocks meeting all conditions:\n")
-if qualified:
-    print(qualified)
-else:
-    print("None found.")
+            if loser_condition:
+                loser_results.append({
+                    "Stock": stock,
+                    "Close": round(float(latest["Close"]), 2),
+                    "RSI": round(float(latest["RSI"]), 2),
+                    "Change": round(float(latest["Open"] - latest["Low"]), 2)
+                })
+
+                {"gainers": gainer_results , "losers": loser_results }
+    
+
+        except Exception as e:
+            return {"result": f"Error processing {stock}: {str(e)}"}
+
+    # -----------------------------
+    # Output
+    # -----------------------------
+    gainer_df = pd.DataFrame(gainer_results)
+    loser_df = pd.DataFrame(loser_results)
+
+    if not gainer_df.empty:
+        print("\nPotential Top Gainers")
+        print(gainer_df.sort_values("Change", ascending=False))
+    else:
+        print("No stocks matched the criteria.")
+
+    if not loser_df.empty:
+        print("\nPotential Top Losers")
+        print(loser_df.sort_values("Change", ascending=False))
+    else:
+        print("No stocks matched the criteria.")
+
+# performers()
