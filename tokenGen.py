@@ -16,7 +16,7 @@ async def fetch_nse_cookies():
         await asyncio.sleep(3)
         cookies = await context.cookies()
         cookie_dict = {} 
-        with open('cookies','w') as line:
+        with open('cookiess','w') as line:
             for cookie in cookies:
                 cookie_dict[cookie["name"]] = cookie["value"]
             line.write(json.dumps(cookie_dict)) 

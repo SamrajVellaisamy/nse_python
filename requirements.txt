@@ -15,3 +15,5 @@ apscheduler
 pymongo
 motor
 python-dotenv
+yfinance
+playwright

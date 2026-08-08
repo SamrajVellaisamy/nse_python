@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Request
+from fastapi import FastAPI,Request,status 
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import datetime as dt
@@ -9,15 +9,17 @@ from common import *
 from tokenGen import fetch_nse_cookies 
 from collections import defaultdict
 from trade import *
-from routers import product,futures,users,login,cashMarketValue
+from routers import product,futures,users,login,cashMarketValue,market_snapshot,market_score
 from models import *  
 from nsepython import *  
 from apscheduler.schedulers.background import BackgroundScheduler 
 from zoneinfo import ZoneInfo
 from contextlib import asynccontextmanager
 from filter import performers
+from db import Database
 
 scheduler = BackgroundScheduler()
+con_db = Database()
     
 app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as much as we want",tags=["Live"]) 
 
@@ -28,6 +30,8 @@ app = FastAPI(title="NSE APP DATA", description="We can collect NSE data here as
 # app.include_router(product.route,tags=["Pivot"])
 app.include_router(futures.routes,tags=["Futures"])
 app.include_router(cashMarketValue.routers,tags=["Cash Market Value"])
+app.include_router(market_snapshot.routes,tags=["Market Snapshot"])
+app.include_router(market_score.router,tags=["Market score"])
 # fnoList = fnolist()
 historyResults = []
 today = date.today()
@@ -93,11 +97,12 @@ def lists(request:Request):
         return {'status': 400,'msg':"Error in list"}
 
 @app.get('/nse/futureindices')
-def getIndices(request:Request):
+async def getIndices(request:Request):
     BaseUrl = str(request.base_url) 
     try:           
-        result = callApi(BASE_ENV+"underlying-information")
-        return {'status':200,'result':result["data"]["UnderlyingList"]+result["data"]["IndexList"]}
+        result = await con_db.get_ims_stock_list(); #callApi(BASE_ENV+"underlying-information")
+        # return {'status':200,'result':result["data"]["UnderlyingList"]+result["data"]["IndexList"]}
+        return {"status":status.HTTP_200_OK,"result":list(result)} 
     except Exception as e:
         return {'status':400,'error':e}
 
@@ -290,7 +295,7 @@ def token_create_scheduler():
 
 token_scheduler = token_create_scheduler()
 
-scheduler = create_scheduler() 
+# scheduler = create_scheduler() 
 
 @app.get("/nse/shutdown")
 def shutdown_event():

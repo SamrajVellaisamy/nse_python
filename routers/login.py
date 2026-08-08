@@ -2,7 +2,7 @@ from fastapi import APIRouter,HTTPException,status
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from schema import *
-from db import *
+from db import Database
 from routers.utils import *
 
 
