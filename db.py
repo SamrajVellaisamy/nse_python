@@ -61,22 +61,43 @@ class Database:
         return self.db.ims_stock_list.delete_many({"symbol": symbol})
 
     def ims_future(self):
-        return self.db.ims_future.find({},  {"_id":0}).sort[{"createdAt": -1}].to_list(length=100)
+        return self.db.ims_future.find({},  {"_id":0}).sort[{"created_at": -1}].to_list(length=100)
 
     def ims_future(self,name,date):
-        return self.db.ims_future.find({"symbol":name,"createdAt": {"$gte": date}},{"_id":0}).to_list(length=100) 
+        return self.db.ims_future.find({"symbol":name,"created_at": {"$gte": date}},{"_id":0}).to_list(length=100) 
 
     def ims_future_delete_many(self):
         return self.db.ims_future.delete_many({})
 
     def ims_future_delete_many(self,date):
-        return self.db.ims_future.delete_many({"createdAt": {"$gt": datetime.fromisoformat(date)}})
+        return self.db.ims_future.delete_many({"created_at": {"$gt": datetime.fromisoformat(date)}})
 
     def market_snapshot_find(self,symbol,date):
         return self.db.market_snapshot.find({"symbol": symbol, "timestamp": {"$gte": date}}, {"_id": 0}).sort([("timestamp", -1)]).to_list(length=100)
     
     def get_score_market(self,symbol,date):
         return self.db.ims_stock_score.find({"symbol":symbol,"created_at":{"$gte":date}},{"_id":0}).sort([("created_at", -1)]).to_list(length=100)
+    
+    async def get_high_oi(self):
+        pipeline = [
+        {"$sort": {"created_at": -1}},
+        {
+            "$group": {
+                "_id": "$symbol",
+                "latest_data": {"$first": "$$ROOT"}
+            }
+        },
+        {"$replaceRoot": {"newRoot": "$latest_data"}}
+        ]
+ 
+        cursor = self.db.ims_near_oi.aggregate(pipeline)
+        data = await cursor.to_list(length=None)
+
+        for item in data:
+            if "_id" in item:
+                item["_id"] = str(item["_id"])
+                
+        return data
         
     print("Successfully connected to the local MongoDB server!")
     

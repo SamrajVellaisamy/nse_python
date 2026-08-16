@@ -9,7 +9,7 @@ from common import *
 from tokenGen import fetch_nse_cookies 
 from collections import defaultdict
 from trade import *
-from routers import product,futures,users,login,cashMarketValue,market_snapshot,market_score
+from routers import product,futures,users,login,cashMarketValue,market_snapshot,market_score,option_oi
 from models import *  
 from nsepython import *  
 from apscheduler.schedulers.background import BackgroundScheduler 
@@ -32,6 +32,7 @@ app.include_router(futures.routes,tags=["Futures"])
 app.include_router(cashMarketValue.routers,tags=["Cash Market Value"])
 app.include_router(market_snapshot.routes,tags=["Market Snapshot"])
 app.include_router(market_score.router,tags=["Market score"])
+app.include_router(option_oi.routes,tags=["Option High IO"])
 # fnoList = fnolist()
 historyResults = []
 today = date.today()
